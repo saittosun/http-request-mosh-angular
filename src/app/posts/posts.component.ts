@@ -24,7 +24,7 @@ export class PostsComponent implements OnInit {
     this.http.post(this.url, JSON.stringify(post))
       .subscribe(response => {
         post['id'] = response;
-        (this.posts as any[]).splice(0, 0, post)
+        (this.posts as any[]).splice(0, 0, post);
       });
   }
 
@@ -33,6 +33,14 @@ export class PostsComponent implements OnInit {
       .subscribe(response => {
         console.log(response)
       })
+  }
+
+  onDeletePost(post) {
+    this.http.patch(this.url + '/' + post.id, JSON.stringify({isRead: true}))
+      .subscribe(response => {
+        const index = this.posts.indexOf(post);
+        this.posts.splice(index, 1);
+      });
   }
 
   ngOnInit(): void {
