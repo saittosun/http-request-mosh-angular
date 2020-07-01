@@ -15,10 +15,20 @@ export class PostsComponent implements OnInit {
     const post = {title: input.value};
     input.value = '';
     this.postService.createPost(post)
-      .subscribe(response => {
+      .subscribe(
+        response => {
         post['id'] = response;
         (this.posts as any[]).splice(0, 0, post);
-      });
+        },
+        (error: Response) => {
+          if (error.status === 400) {
+            // this.form.setErrors(error.json())
+          }
+          else {
+            alert('an expected error has occured');
+            console.log(error);
+          }
+        });
   }
 
   onUpdatePost(post) {
@@ -30,10 +40,20 @@ export class PostsComponent implements OnInit {
 
   onDeletePost(post) {
     this.postService.deletePost(post.id)
-      .subscribe(response => {
+      .subscribe(
+        response => {
         const index = this.posts.indexOf(post);
         this.posts.splice(index, 1);
-      });
+        },
+        (error: Response) => {
+          if (error.status === 404) {
+            alert('this post has already been deleted.')
+          }
+          else {
+            alert('an expected error has occured');
+            console.log(error);
+          }
+        });
   }
 
   ngOnInit(): void {
@@ -41,6 +61,8 @@ export class PostsComponent implements OnInit {
       .subscribe(response => {
         this.posts = response;
         console.log(this.posts);
+    }, error => {
+      alert('unexpected error has occured');
     });
   }
 
