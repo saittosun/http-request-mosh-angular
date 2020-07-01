@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { PostService } from './../services/post.service';
+import { AppError } from '../common/app-error';
+import { InternalServerError } from '../common/internal-server-error';
+import { NotFoundError } from '../common/not-found-error';
+import { BadRequestError } from '../common/bad-request-error';
+import { UnavailableError } from '../common/unavailable-error';
 
 @Component({
   selector: 'app-posts',
@@ -20,9 +25,12 @@ export class PostsComponent implements OnInit {
         post['id'] = response;
         (this.posts as any[]).splice(0, 0, post);
         },
-        (error: Response) => {
-          if (error.status === 400) {
-            // this.form.setErrors(error.json())
+        (error: AppError) => {
+          if (error instanceof BadRequestError) {
+            alert('Invalid Data.');
+          }
+          else if (error instanceof InternalServerError) {
+            alert('Internal Server Error');
           }
           else {
             alert('an expected error has occured');
@@ -35,7 +43,21 @@ export class PostsComponent implements OnInit {
     this.postService.updatePost(post)
       .subscribe(response => {
         console.log(response)
-      })
+      },
+      (error: AppError) => {
+        if (error instanceof BadRequestError) {
+          alert('Invalid Data.');
+        }
+        else if (error instanceof NotFoundError) {
+          alert('No HTTP resource was found that matches the request URI.');
+        }
+        else if (error instanceof InternalServerError) {
+          alert('Internal Server Error');
+        }
+        else {
+          alert('An unxepcted error occurred');
+        }
+      });
   }
 
   onDeletePost(post) {
@@ -45,13 +67,15 @@ export class PostsComponent implements OnInit {
         const index = this.posts.indexOf(post);
         this.posts.splice(index, 1);
         },
-        (error: Response) => {
-          if (error.status === 404) {
-            alert('this post has already been deleted.')
+        (error: AppError) => {
+          if (error instanceof NotFoundError) {
+            alert('No HTTP resource was found that matches the request URI.');
+          }
+          else if (error instanceof InternalServerError) {
+            alert('Internal Server Error');
           }
           else {
-            alert('an expected error has occured');
-            console.log(error);
+            alert('An unxepcted error occurred');
           }
         });
   }
@@ -61,8 +85,19 @@ export class PostsComponent implements OnInit {
       .subscribe(response => {
         this.posts = response;
         console.log(this.posts);
-    }, error => {
-      alert('unexpected error has occured');
+    }, (error: AppError) => {
+      if (error instanceof UnavailableError) {
+        alert('Customer API is unavailable at the moment. Please contact app support.');
+      }
+      else if (error instanceof NotFoundError) {
+        alert('No HTTP resource was found that matches the request URL.');
+      }
+      else if (error instanceof InternalServerError) {
+        alert('Internal Server Error');
+      }
+      else {
+        alert('An unexpected error occurred.');
+      }
     });
   }
 
